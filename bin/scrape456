@@ -5,44 +5,39 @@ require 'rspec/expectations'
 require 'capybara/rspec'
 require 'open-uri'
 
-options = {}
-Capybara.register_driver :poltergeist do |app|
-  Capybara::Poltergeist::Driver.new(app, options)
-end
-Capybara.current_driver = :poltergeist
-Capybara.javascript_driver = :poltergeist
-Capybara.run_server = false
-
-THIRTY_SECONDS = 30
-Capybara.default_max_wait_time = THIRTY_SECONDS
-
-# Usage example:
+# Given a username and password, retrieves all event attendee data from 123Signup.
 #
-# shot_filenames = ScreenshotFilenameSequence.new
-# ...
-# session.save_screenshot(shot_filenames.next(:after_click_event_attendee_data))
+# Usage:
 #
-class ScreenshotFilenameSequence
-  def initialize
-    @counter = 0
-  end
-
-  def next(label)
-    @counter += 1
-    Time.now.utc.iso8601 + '-' + ('%02d' % @counter) + '-' + label.to_s + '.png'
-  end
-end
-
+# csv_result = Scrape123Signup.new(
+#   username: ENV['LOGIN_USER_1'],
+#   password: ENV['LOGIN_PASSWORD_1']
+# ).call
+# 
+# puts csv_result
 class Scrape123Signup
   include ::RSpec::Matchers
   include ::Capybara::RSpecMatchers
 
   LOGIN_URL = 'https://redirect.123signup.com/login'
   ONLOAD_REDIRECT_XPATH = "//body[contains(@onload,'pageLoadRedirect')]"
+  THIRTY_SECONDS = 30
 
   def initialize(username:, password:)
     @username = username
     @password = password
+    set_up_capybara
+  end
+
+  def set_up_capybara
+    options = {}
+    Capybara.register_driver :poltergeist do |app|
+      Capybara::Poltergeist::Driver.new(app, options)
+    end
+    Capybara.current_driver = :poltergeist
+    Capybara.javascript_driver = :poltergeist
+    Capybara.run_server = false
+    Capybara.default_max_wait_time = THIRTY_SECONDS
   end
 
   def log_in
@@ -109,6 +104,26 @@ class Scrape123Signup
       end
     end
     csv_result
+  end
+
+  # Returns filenames for successive screenshots. The resulting filenames sort
+  # by date and sequence and include descriptive labels.
+  #
+  # Usage example:
+  #
+  # shot_filenames = ScreenshotFilenameSequence.new
+  # ...
+  # session.save_screenshot(shot_filenames.next(:after_click_event_attendee_data))
+  #
+  class ScreenshotFilenameSequence
+    def initialize
+      @counter = 0
+    end
+
+    def next(label)
+      @counter += 1
+      Time.now.utc.iso8601 + '-' + ('%02d' % @counter) + '-' + label.to_s + '.png'
+    end
   end
 end
 

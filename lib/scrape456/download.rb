@@ -21,6 +21,13 @@ module Scrape456
 
     LOGIN_URL = 'https://redirect.123signup.com/login'
     ONLOAD_REDIRECT_XPATH = "//body[contains(@onload,'pageLoadRedirect')]"
+
+    # Machine-generated: pulled from Firefox dev tools. But it works, where my
+    # handcrafted XPath did not.
+    REPORT_TAB_LINK_CSS_SELECTOR = 'body > form:nth-child(1) > table:nth-child(3) > ' +
+      'tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(2) > table:nth-child(1) > ' +
+      'tbody:nth-child(1) > tr:nth-child(1) > td:nth-child(7) > a:nth-child(1)'
+
     THIRTY_SECONDS = 30
 
     def initialize(username:, password:)
@@ -90,9 +97,13 @@ module Scrape456
       STDERR.puts 'Logging in to 123Signup...'
       log_in
       session.within_frame('FrameApplication') do
+        session.within_frame('top_menu') do
+          STDERR.puts 'Navigating to reports tab...'
+          session.find(REPORT_TAB_LINK_CSS_SELECTOR).click
+        end
         session.within_frame('contents') do
           session.within_frame('MenuList') do
-            STDERR.puts 'Navigating to reports...'
+            STDERR.puts 'Navigating to event reports...'
             session.click_link 'Event Reports'
           end
           session.within_frame('Results') do

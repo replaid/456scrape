@@ -3,7 +3,7 @@ PATH
   specs:
     scrape456 (0.1.0)
       poltergeist (~> 1.17)
-      rspec (~> 3.7.0)
+      rspec (~> 3.7)
 
 GEM
   remote: https://rubygems.org/

@@ -37,7 +37,7 @@ module Scrape456
     end
 
     def set_up_capybara
-      options = {}
+      options = {phantomjs_options: ['--ssl-protocol=any']}
       Capybara.register_driver :poltergeist do |app|
         Capybara::Poltergeist::Driver.new(app, options)
       end
